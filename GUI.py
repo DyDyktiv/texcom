@@ -32,6 +32,7 @@ class Example(QWidget):
 
         self.hmode = QCheckBox('Сохранить структуру базы данных?', self)
         self.start = QPushButton('Приступить', self)
+        self.start.clicked.connect(self.startWork)
         self.progbar = QProgressBar(self)
         self.progbar.setValue(0)
         self.toInfo = QLabel('', self)
@@ -66,6 +67,16 @@ class Example(QWidget):
     def outputPath(self):
         file = os.path.normpath(QFileDialog.getExistingDirectory(self))
         self.outPath.setText(file)
+
+    def startWork(self):
+        self.start.blockSignals(True)
+        print('Input database:')
+        print('Type:', self.inMode.currentText())
+        print('Path:', self.inPath.text())
+        print('Output database')
+        print('Type:', self.outMode.currentText())
+        print('Path', self.outPath.text())
+        print('Mode:', self.hmode.isChecked())
 
 
 if __name__ == '__main__':
