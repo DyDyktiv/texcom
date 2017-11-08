@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QLineEdit,
     QCheckBox, QProgressBar, QFileDialog
 
 
+import tc_analize
+
+
 class Example(QWidget):
     def __init__(self):
         super().__init__()
@@ -77,6 +80,12 @@ class Example(QWidget):
         print('Type:', self.outMode.currentText())
         print('Path', os.path.normpath(self.outPath.text()).replace('\\', '/'))
         print('Mode:', self.hmode.isChecked())
+
+        analize = tc_analize.analize(os.path.normpath(self.inPath.text()).replace('\\', '/'), self.inMode.currentText())
+        print(len(analize.files), 'files')
+        print(analize.fullsize//1000, 'KB')
+
+
 
 
 if __name__ == '__main__':
