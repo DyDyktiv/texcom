@@ -72,10 +72,10 @@ class Example(QWidget):
         self.start.blockSignals(True)
         print('Input database:')
         print('Type:', self.inMode.currentText())
-        print('Path:', self.inPath.text())
+        print('Path:', os.path.normpath(self.inPath.text()).replace('\\', '/'))
         print('Output database')
         print('Type:', self.outMode.currentText())
-        print('Path', self.outPath.text())
+        print('Path', os.path.normpath(self.outPath.text()).replace('\\', '/'))
         print('Mode:', self.hmode.isChecked())
 
 
