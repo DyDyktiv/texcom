@@ -18,22 +18,21 @@ class Report:
 
 def analize(dbpath, dbtype):
     if dbtype == 'dos':
-        dbtype = re.compile('\.[\d]{3}')
+        mask = re.compile('\.[\d]{3}')
     elif dbtype == 'xml':
-        dbtype = re.compile('\.xml')
+        mask = re.compile('\.xml')
     elif dbtype == 'MDB':
-        dbtype == re.compile('\.json')
+        mask = re.compile('\.json')
 
     objs = os.listdir(dbpath)
     dirs = list(filter(lambda x: os.path.isdir(os.path.join(dbpath, x)), objs))
-    files = list(map(lambda f: File(f, dbpath), filter(lambda x: dbtype.search(x), objs)))
+    files = list(map(lambda f: File(f, dbpath), filter(lambda x: mask.search(x), objs)))
 
     for d in dirs:
         objs = os.listdir(os.path.join(dbpath, d))
         dirs.extend(map(lambda xx: os.path.join(d, xx),
                         filter(lambda x: os.path.isdir(os.path.join(dbpath, d, x)), objs)))
-        files.extend(map(lambda f: File(f, os.path.join(dbpath, d)),
-                         filter(lambda x: dbtype.search(x), objs)))
+        files.extend(map(lambda f: File(f, os.path.join(dbpath, d)), filter(lambda x: mask.search(x), objs)))
 
     r = Report
     r.fullsize = sum(map(lambda x: x.size, files))

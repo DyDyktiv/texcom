@@ -7,17 +7,9 @@ class Attr:
 
 
 class Document:
-    def __init__(self, name):
-        self.name = name
-        self.note = ''
-        self.atrs = []
-        self.recs = []
+    def __init__(self, ):
+        pass
+
 
     def temp_out(self):
         return 0, self.name, self.note, self.atrs, self.recs
-
-
-class ErrorP:
-    def __init__(self, mode, info):
-        self.mode = mode
-        self.info = info
