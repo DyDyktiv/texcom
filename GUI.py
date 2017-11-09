@@ -86,8 +86,6 @@ class Example(QWidget):
         print(analize.fullsize//1000, 'KB')
 
 
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Example()

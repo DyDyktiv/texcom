@@ -1,5 +1,6 @@
 from re import compile as load
 import tc_classes
+import tc_analize
 
 criteria = ('* Ключ таблицы',
             '* Заголовок таблицы',
@@ -168,3 +169,7 @@ def dosindata(path):
         del (t[0])
 
     return d.tempout()
+
+r = tc_analize.File('FPRR.001', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/BASE')
+
+pass
