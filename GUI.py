@@ -84,6 +84,7 @@ class Example(QWidget):
         analize = tc_analize.analize(os.path.normpath(self.inPath.text()).replace('\\', '/'), self.inMode.currentText())
         print(len(analize.files), 'files')
         print(analize.fullsize//1000, 'KB')
+        self.start.blockSignals(False)
 
 
 if __name__ == '__main__':

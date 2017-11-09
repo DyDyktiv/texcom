@@ -1,17 +1,7 @@
 import os
 import os.path
 import re
-
-
-class File:
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-        self.size = os.path.getsize(os.path.join(path, name))
-
-
-    def pathing(self):
-        return os.path.join(self.path, self.name)
+import tc_classes
 
 
 class Report:
@@ -30,16 +20,22 @@ def analize(dbpath, dbtype):
 
     objs = os.listdir(dbpath)
     dirs = list(filter(lambda x: os.path.isdir(os.path.join(dbpath, x)), objs))
-    files = list(map(lambda f: File(f, dbpath), filter(lambda x: mask.search(x), objs)))
+    files = list(map(lambda f: tc_classes.Document(f, dbpath, dbtype), filter(lambda x: mask.search(x), objs)))
 
     for d in dirs:
         objs = os.listdir(os.path.join(dbpath, d))
         dirs.extend(map(lambda xx: os.path.join(d, xx),
                         filter(lambda x: os.path.isdir(os.path.join(dbpath, d, x)), objs)))
-        files.extend(map(lambda f: File(f, os.path.join(dbpath, d)), filter(lambda x: mask.search(x), objs)))
+        files.extend(map(lambda f: tc_classes.Document(f, os.path.join(dbpath, d), dbtype),
+                         filter(lambda x: mask.search(x), objs)))
 
     r = Report
-    r.fullsize = sum(map(lambda x: x.size, files))
+    if dbtype == 'dos':
+        r.fullsize = sum(map(lambda x: x.dos_size, files))
+    if dbtype == 'xml':
+        r.fullsize = sum(map(lambda x: x.xml_size, files))
+    if dbtype == 'MDB':
+        r.fullsize = sum(map(lambda x: x.mdb_size, files))
     r.files = files
 
     return r
