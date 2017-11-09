@@ -8,5 +8,8 @@ class Attr:
 
 class Document:
     def __init__(self):
-        self.dos_name = ''
+        self.dos_name = False
         self.name = ''
+        self.note = ''
+        self.atrs = False
+        self.recs = False

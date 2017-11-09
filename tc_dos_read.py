@@ -83,11 +83,15 @@ def recordwork(s, attrs):
     else:
         return 0, record
 
-def dosindata(path):
+def dosindata(inputdata):
     """Анализирует dos файл и возвращает находящиеся в нем данные"""
 
+    # Создание объекта файла
+    d = tc_classes.Document
+    d.dos_name = inputdata.name
+
     # Чтение "таблицы"
-    f = open(path, encoding='cp866')
+    f = open(inputdata.pathing(), encoding='cp866')
     t = f.read()
     f.close()
 
@@ -124,7 +128,7 @@ def dosindata(path):
     if len(t) < 7:
         return [4]
     del (t[0])
-    d = tc_classes.Document(t[0])
+    d.name = t[0]
     del (t[0])
 
     # Выделение заголовка таблицы
@@ -168,8 +172,8 @@ def dosindata(path):
             return record
         del (t[0])
 
-    return d.tempout()
+    return d
 
 r = tc_analize.File('FPRR.001', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/BASE')
 
-pass
+f = dosindata(r)

@@ -10,6 +10,10 @@ class File:
         self.size = os.path.getsize(os.path.join(path, name))
 
 
+    def pathing(self):
+        return os.path.join(self.path, self.name)
+
+
 class Report:
     def __init__(self):
         self.fullsize = 0
