@@ -11,34 +11,38 @@ class Attr:
 
 class Document:
     def __init__(self, name, path, mode):
+        self.errors = False
         self.dos_name = False
-        self.xml_name = False
-        self.mdb_name = False
-        self.dos_path = False
-        self.xml_path = False
-        self.mdb_path = False
-        self.dos_size = 0
-        self.xml_size = 0
-        self.mdb_size = 0
+        self.name = False
+        self.path = path
+        self.size = 0
 
         if mode == 'dos':
             self.dos_name = name
-            self.dos_path = path
             self.fdossize()
         elif mode == 'xml':
-            self.xml_name = name
-            self.xml_path = path
+            self.name = name[:name.rfind('.')]
             self.fxmlsize()
         elif mode == 'MDB':
-            self.mdb_name = name
-            self.mdb_path = path
+            self.name = name[:name.rfind('.')]
             self.fmdbsize()
 
     def fdossize(self):
-        self.dos_size = os.path.getsize(os.path.join(self.dos_path, self.dos_name))
+        self.size = os.path.getsize(os.path.join(self.path, self.dos_name))
 
     def fxmlsize(self):
-        self.xml_size = os.path.getsize(os.path.join(self.xml_path, self.xml_name + '.xml'))
+        self.size = os.path.getsize(os.path.join(self.path, self.name + '.xml'))
 
     def fmdbsize(self):
-        self.mdb_size = os.path.getsize(os.path.join(self.mdb_path, self.mdb_name + '.json'))
+        self.size = os.path.getsize(os.path.join(self.path, self.name + '.json'))
+
+    def dos_read(self):
+        f = open(os.path.join(self.path, self.dos_name), encoding='cp866')
+        t = f.read()
+        f.close()
+
+
+r = Document('FPRR.001', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/BASE', 'dos')
+r.dos_read()
+
+

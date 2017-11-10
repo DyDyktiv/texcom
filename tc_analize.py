@@ -30,12 +30,7 @@ def analize(dbpath, dbtype):
                          filter(lambda x: mask.search(x), objs)))
 
     r = Report
-    if dbtype == 'dos':
-        r.fullsize = sum(map(lambda x: x.dos_size, files))
-    if dbtype == 'xml':
-        r.fullsize = sum(map(lambda x: x.xml_size, files))
-    if dbtype == 'MDB':
-        r.fullsize = sum(map(lambda x: x.mdb_size, files))
+    r.fullsize = sum(map(lambda x: x.size, files))
     r.files = files
 
     return r

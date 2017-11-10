@@ -174,6 +174,6 @@ def dosindata(inputdata):
 
     return d
 
-r = tc_analize.File('FPRR.001', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/BASE')
+
 
 f = dosindata(r)
