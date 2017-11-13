@@ -154,21 +154,21 @@ class Document:
             self.dos_name = s[s.find('dos_name="') + 10: s.find('" note=')]
             self.note = s[s.find('note="') + 6: s.find('">')]
 
-            s = f.readline()
+            f.readline()
             while True:
                 s = f.readline()
                 if '</attrs>' in s:
                     break
-                self.atrs.append(Attr(s[s.find('name="') + 6: s.find('" mask')],\
-                                      s[s.find('mask="') + 6: s.find('" type')], \
+                self.atrs.append(Attr(s[s.find('name="') + 6: s.find('" mask')],
+                                      s[s.find('mask="') + 6: s.find('" type')],
                                       s[s.find('type="') + 6: -4]))
 
-            s = f.readline()
+            f.readline()
             while True:
                 s = f.readline()
                 if '</records>' in s:
                     break
-                s = list(map(lambda x: x[x.find('"') + 1: x.rfind('"')], re.split('fild\d', s)[1: ]))
+                s = list(map(lambda x: x[x.find('"') + 1: x.rfind('"')], re.split('fild\d', s)[1:]))
                 for i, a in enumerate(self.atrs):
                     if a.mode == 'int':
                         s[i] = int(s[i])
