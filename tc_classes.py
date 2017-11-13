@@ -141,11 +141,82 @@ class Document:
         while len(t):
             report = dosrecordwork(t[0], self.atrs)
             if report[0]:
-                self.recs = report[1]
+                self.recs.append(report[1])
             else:
                 self.error = report[1]
                 return False
             del (t[0])
+
+    def xml_read(self):
+        f = open(os.path.join(self.path, self.name + '.xml'), encoding='utf-8')
+        if f.readline() == '<?xml version="1.0" encoding="UTF-8"?>\n':
+            s = f.readline()
+            self.dos_name = s[s.find('dos_name="') + 10: s.find('" note=')]
+            self.note = s[s.find('note="') + 6: s.find('">')]
+
+            s = f.readline()
+            while True:
+                s = f.readline()
+                if '</attrs>' in s:
+                    break
+                self.atrs.append(Attr(s[s.find('name="') + 6: s.find('" mask')],\
+                                      s[s.find('mask="') + 6: s.find('" type')], \
+                                      s[s.find('type="') + 6: -3]))
+
+            s = f.readline()
+            while True:
+                s = f.readline()
+                if '</records>' in s:
+                    break
+                s = tuple(map(lambda x: x[x.find('"') + 1: x.rfind('"')], re.split('fild\d', s)[1: ]))
+                for i, a in enumerate(self.atrs):
+                    if a.mode == 'int':
+                        s[i] = int(s[i])
+                    elif a.mode == 'float':
+                        s[i] = float(s[i])
+                self.recs.append(s)
+
+        else:
+            self.error = EError('Ошибка чтения')
+            return False
+        f.close()
+
+    def xml_save(self, path):
+        t = ' ' * 2
+        f = open(os.path.join(path, self.name + '.xml'), 'w', encoding='utf-8')
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<data dos_name="{}" note="{}">\n'.format(self.dos_name, self.note))
+
+        f.write(2 * t + '<attrs>\n')
+        for a in self.atrs:
+            f.write(3 * t + '<attr name="{}" mask="{}" type="{}"/>\n'.format(a.name, a.mask, a.mode))
+        f.write(2 * t + '</attrs>\n')
+
+        f.write(2 * t + '<records>\n')
+        for record in self.recs:
+            s = 3 * t + '<record '
+            for i, word in enumerate(record):
+                s += 'fild{}="{}" '.format(i, word)
+            s += '/>\n'
+            f.write(s)
+        f.write(2 * t + '</records>\n')
+        f.write('</data>\n')
+        f.close()
+
+    def mdb_save(self, path):
+        pass
+
+    def print(self):
+        print('Erorr?...{}'.format((False, True)[self.error]))
+        print('Name: {}     dos name: {}     size: {} B'.format(self.name, self.dos_name, self.size))
+        print('Path: {}'.format(self.path))
+        print('Note: {}'.format(self.note))
+        print('Attrs:')
+        for a in self.atrs:
+            print('-Name: {}   Type: {}   Mask: {}'.format(a.name, a.mode, a.mask))
+        print('Records:')
+        for r in self.recs:
+            print('-{}'.format(r))
 
 
 def dosattrwork(s):
@@ -183,7 +254,7 @@ def dosrecordwork(s: str, atrs):
             else:
                 w = s
                 s = False
-            w.strip()
+            w = w.strip()
             if a.mode == 'str':
                 rept.append(w)
             elif a.mode == 'int':
@@ -204,3 +275,15 @@ def dosrecordwork(s: str, atrs):
         return False, EError('Ошибка чтения', errors)
     elif rept:
         return True, rept
+
+
+#'''
+r = Document('FPRR.001', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/BASE', 'dos')
+r.dos_read()
+r.xml_save('D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester')
+r.print()
+'''
+r = Document('formnn.xml', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester', 'xml')
+r.xml_read()
+r.print()
+#'''
