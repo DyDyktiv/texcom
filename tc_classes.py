@@ -161,14 +161,14 @@ class Document:
                     break
                 self.atrs.append(Attr(s[s.find('name="') + 6: s.find('" mask')],\
                                       s[s.find('mask="') + 6: s.find('" type')], \
-                                      s[s.find('type="') + 6: -3]))
+                                      s[s.find('type="') + 6: -4]))
 
             s = f.readline()
             while True:
                 s = f.readline()
                 if '</records>' in s:
                     break
-                s = tuple(map(lambda x: x[x.find('"') + 1: x.rfind('"')], re.split('fild\d', s)[1: ]))
+                s = list(map(lambda x: x[x.find('"') + 1: x.rfind('"')], re.split('fild\d', s)[1: ]))
                 for i, a in enumerate(self.atrs):
                     if a.mode == 'int':
                         s[i] = int(s[i])
@@ -182,7 +182,7 @@ class Document:
         f.close()
 
     def xml_save(self, path):
-        t = ' ' * 2
+        t = ' ' * 4
         f = open(os.path.join(path, self.name + '.xml'), 'w', encoding='utf-8')
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<data dos_name="{}" note="{}">\n'.format(self.dos_name, self.note))
@@ -204,7 +204,41 @@ class Document:
         f.close()
 
     def mdb_save(self, path):
-        pass
+        t = ' ' * 4
+        f = open(os.path.join(path, self.name + '.json'), 'w', encoding='utf-8')
+        f.write('{\n')
+        f.write(t + '"dos name": "{}",\n'.format(self.dos_name))
+        f.write(t + '"note": "{}",\n'.format(self.note))
+        f.write(t + '"attrs": [\n')
+        collector = []
+        for a in self.atrs:
+            s = 2 * t + '"attr": {\n'
+            s += 3 * t + '"name": "{}",\n'.format(a.name)
+            s += 3 * t + '"mask": "{}",\n'.format(a.mask)
+            s += 3 * t + '"type": "{}"\n'.format(a.mode)
+            collector.append(s)
+        s = 2 * t + '},\n'
+        f.write(s.join(collector))
+        f.write(2 * t + '}\n')
+        f.write(t + '],\n')
+
+        f.write(t + '"records": [\n')
+        collector = []
+        for record in self.recs:
+            s = []
+            for i, a in enumerate(self.atrs):
+                if a.mode in ('int', 'float'):
+                    s.append(t * 3 + '"fild{}": {}'.format(i, str(record[i])))
+                else:
+                    s.append(t * 3 + '"fild{}": "{}"'.format(i, record[i]))
+            s = t * 2 + '"record": {\n' + ',\n'.join(s) + '\n'
+            collector.append(s)
+        s = t * 2 + '},\n'
+        f.write(s.join(collector))
+        f.write(2 * t + '}\n')
+        f.write(t + ']\n')
+        f.write('}\n')
+        f.close()
 
     def print(self):
         print('Erorr?...{}'.format((False, True)[self.error]))
@@ -277,7 +311,7 @@ def dosrecordwork(s: str, atrs):
         return True, rept
 
 
-#'''
+'''
 r = Document('FPRR.001', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/BASE', 'dos')
 r.dos_read()
 r.xml_save('D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester')
@@ -286,4 +320,5 @@ r.print()
 r = Document('formnn.xml', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester', 'xml')
 r.xml_read()
 r.print()
+r.mdb_save('D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester')
 #'''
