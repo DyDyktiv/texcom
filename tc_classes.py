@@ -181,6 +181,45 @@ class Document:
             return False
         f.close()
 
+    def mdb_read(self):
+        f = open(os.path.join(self.path, self.name + '.json'), encoding='utf-8')
+        f.readline()
+        s = f.readline()
+        self.dos_name = s[s.find('"dos name": "') + 13: s.rfind('"')]
+        s = f.readline()
+        self.note = s[s.find('"note": "') + 9: s.rfind('"')]
+        f.readline()
+        while True:
+            s = f.readline()
+            if '    ],\n' == s:
+                break
+            if '        "attr": {\n' == s:
+                s = f.readline()
+                name = s[s.find('"name": "') + 9: s.rfind('"')]
+                s = f.readline()
+                mask = s[s.find('"mask": "') + 9: s.rfind('"')]
+                s = f.readline()
+                mode = s[s.find('"type": "') + 9: s.rfind('"')]
+                self.atrs.append(Attr(name, mask, mode))
+        f.readline()
+        while True:
+            s = f.readline()
+            if '    ]' in s:
+                break
+            elif '        "record": {\n' == s:
+                record = []
+                for a in self.atrs:
+                    s = f.readline()
+                    if a.mode == 'str':
+                        record.append(s[s.find('": "') + 4: s.rfind('"')])
+                    elif a.mode in ('int', 'float'):
+                        if 'None' in s:
+                            record.append(None)
+                        else:
+                            record.append(real.search(s).group())
+                self.recs.append(record)
+        f.close()
+
     def xml_save(self, path):
         t = ' ' * 4
         f = open(os.path.join(path, self.name + '.xml'), 'w', encoding='utf-8')
@@ -228,7 +267,7 @@ class Document:
             s = []
             for i, a in enumerate(self.atrs):
                 if a.mode in ('int', 'float'):
-                    s.append(t * 3 + '"fild{}": {}'.format(i, str(record[i])))
+                    s.append(t * 3 + '"fild{}": {}'.format(i, record[i]))
                 else:
                     s.append(t * 3 + '"fild{}": "{}"'.format(i, record[i]))
             s = t * 2 + '"record": {\n' + ',\n'.join(s) + '\n'
@@ -309,16 +348,3 @@ def dosrecordwork(s: str, atrs):
         return False, EError('Ошибка чтения', errors)
     elif rept:
         return True, rept
-
-
-'''
-r = Document('FPRR.001', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/BASE', 'dos')
-r.dos_read()
-r.xml_save('D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester')
-r.print()
-'''
-r = Document('formnn.xml', 'D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester', 'xml')
-r.xml_read()
-r.print()
-r.mdb_save('D:/YandexDisk/Документы/6 семестр/СБД/texkom/tester')
-#'''
