@@ -128,7 +128,7 @@ class Example(QWidget):
             grid.addWidget(QLabel('Успешно: {}'.format(all-errors)), 1, 0)
             grid.addWidget(QLabel('Список ошибок в errors.log'), 2, 0)
         else:
-            grid.addWidget(QLabel('Ошибок нет', 1, 0)
+            grid.addWidget(QLabel('Ошибок нет', 1, 0))
         d.setLayout(grid)
         d.exec_()
 
