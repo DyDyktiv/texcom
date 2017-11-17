@@ -2,17 +2,17 @@ import os.path
 import re
 
 
-re_doc_test = re.compile('''[a-zA-Z0-9а-яА-Я* \n_,.?!+\-/\\\|^=<>'";:$%&@()]+''')
-re_attr_str = re.compile('[A-Z]+\.[A-Z0-9]+=X\([0-9]+\)".*"')
-re_attr_num = re.compile('[A-Z]+\.[A-Z0-9]+=9*[V,.]?9*\(?[0-9]*\)?".*"')
+re_doc_test = re.compile('''[a-zA-Z0-9а-яА-Я* \n_,.?!+\-/\\\|^=<>'`";:$%&@()]+''')
+re_attr_str = re.compile('[A-Z]+\.[A-Z0-9]+=[ ]?X\([0-9]+\)".*"')
+re_attr_num = re.compile('[A-Z]+\.[A-Z0-9]+=[ ]?9*[V,.]?9*\(?\d*\)?".*"')
 re_attr_name = re.compile('[A-Z]+\.[A-Z0-9]+')
-re_attr_str_long = re.compile('=X\(\d+\)"')
-re_attr_num_long = re.compile('=9*[V,.]?9*"')
+re_attr_str_long = re.compile('=[ ]?X\(\d+\)"')
+re_attr_num_long = re.compile('=[ ]?9*[V,.]?9*\(?\d*\)?"')
 real = re.compile('\d+[,.]?\d+')
 
 
 class EError:
-    def __init__(self, name, note=None):
+    def __init__(self, name, note=''):
         self.name = name
         self.note = note
 
@@ -42,22 +42,21 @@ class Document:
 
         if mode == 'dos':
             self.dos_name = name
-            self.fdossize()
+            self.size = os.path.getsize(os.path.join(self.path, self.dos_name))
         elif mode == 'xml':
             self.name = name[:name.rfind('.')]
-            self.fxmlsize()
+            self.size = os.path.getsize(os.path.join(self.path, self.name + '.xml'))
         elif mode == 'MDB':
             self.name = name[:name.rfind('.')]
-            self.fmdbsize()
+            self.size = os.path.getsize(os.path.join(self.path, self.name + '.json'))
 
-    def fdossize(self):
-        self.size = os.path.getsize(os.path.join(self.path, self.dos_name))
-
-    def fxmlsize(self):
-        self.size = os.path.getsize(os.path.join(self.path, self.name + '.xml'))
-
-    def fmdbsize(self):
-        self.size = os.path.getsize(os.path.join(self.path, self.name + '.json'))
+    def read(self, mode):
+        if mode == 'dos':
+            self.dos_read()
+        elif mode == 'xml':
+            self.xml_read()
+        elif mode == 'MDB':
+            self.mdb_read()
 
     def dos_read(self):
         f = open(os.path.join(self.path, self.dos_name), encoding='cp866')
@@ -146,6 +145,7 @@ class Document:
                 self.error = report[1]
                 return False
             del (t[0])
+        return True
 
     def xml_read(self):
         f = open(os.path.join(self.path, self.name + '.xml'), encoding='utf-8')
@@ -167,19 +167,25 @@ class Document:
             while True:
                 s = f.readline()
                 if '</records>' in s:
-                    break
-                s = list(map(lambda x: x[x.find('"') + 1: x.rfind('"')], re.split('fild\d', s)[1:]))
+                    f.close()
+                    return True
+                s = list(map(lambda x: x[x.find('"') + 1: x.rfind('"')], re.split('fild\d+', s)[1:]))
                 for i, a in enumerate(self.atrs):
                     if a.mode == 'int':
-                        s[i] = int(s[i])
+                        if 'None' in s[i]:
+                            s[i] = None
+                        else:
+                            s[i] = int(s[i])
                     elif a.mode == 'float':
-                        s[i] = float(s[i])
+                        if 'None' in s[i]:
+                            s[i] = None
+                        else:
+                            s[i] = float(s[i])
                 self.recs.append(s)
-
         else:
+            f.close()
             self.error = EError('Ошибка чтения')
             return False
-        f.close()
 
     def mdb_read(self):
         f = open(os.path.join(self.path, self.name + '.json'), encoding='utf-8')
@@ -205,20 +211,31 @@ class Document:
         while True:
             s = f.readline()
             if '    ]' in s:
-                break
+                f.close()
+                return True
             elif '        "record": {\n' == s:
                 record = []
                 for a in self.atrs:
                     s = f.readline()
                     if a.mode == 'str':
                         record.append(s[s.find('": "') + 4: s.rfind('"')])
-                    elif a.mode in ('int', 'float'):
+                    elif a.mode == 'int':
                         if 'None' in s:
                             record.append(None)
                         else:
-                            record.append(real.search(s).group())
+                            record.append(int(re.search('\d+', s[s.rfind(': ') + 2:-1]).group()))
+                    elif a.mode == 'float':
+                        if 'None' in s:
+                            record.append(None)
+                        else:
+                            record.append(float(real.search(s).group()))
                 self.recs.append(record)
-        f.close()
+
+    def save(self, mode, path):
+        if mode == 'xml':
+            self.xml_save(path)
+        elif mode == 'MDB':
+            self.mdb_save(path)
 
     def xml_save(self, path):
         t = ' ' * 4
@@ -241,6 +258,7 @@ class Document:
         f.write(2 * t + '</records>\n')
         f.write('</data>\n')
         f.close()
+        return True
 
     def mdb_save(self, path):
         t = ' ' * 4
@@ -278,6 +296,7 @@ class Document:
         f.write(t + ']\n')
         f.write('}\n')
         f.close()
+        return True
 
     def print(self):
         print('Erorr?...{}'.format((False, True)[self.error]))
@@ -292,6 +311,14 @@ class Document:
             print('-{}'.format(r))
 
 
+def tofloat(n):
+    try:
+        float(n)
+        return True
+    except ValueError:
+        return False
+
+
 def dosattrwork(s):
     """Преобразует строку атрибутов в массив аттрибутов"""
     atrs = list(filter(lambda x: x, s.split(';')))
@@ -302,8 +329,15 @@ def dosattrwork(s):
                            int(re_attr_str_long.search(c).group()[3:-2]))
         elif re_attr_num.match(c):
             long = re_attr_num_long.search(c).group()[1: -1]
-            atrs[i] = Attr(re_attr_name.match(c).group(), c.split('"')[1],
-                           ['int', 'float']['V' in long], len(long))
+            if re.search('[V,.]{1}', long):
+                mode = 'float'
+            else:
+                mode = 'int'
+            if '(' in long:
+                long = int(re.search('\(\d+\)', long).group()[1: -1])
+            else:
+                long = len(long.strip())
+            atrs[i] = Attr(re_attr_name.match(c).group(), c.split('"')[1], mode, long)
         else:
             errors.append(c)
     if errors:
@@ -333,13 +367,17 @@ def dosrecordwork(s: str, atrs):
             elif a.mode == 'int':
                 if w.isdigit():
                     rept.append(int(w))
+                elif w == '':
+                    rept.append(0)
                 else:
                     errors.append(('to int:', w))
             elif a.mode == 'float':
                 w.replace(',', '.')
                 w.replace('V', '.')
-                if w.isdecimal():
+                if tofloat(w):
                     rept.append(float(w))
+                elif w == '.':
+                    rept.append(0.0)
                 else:
                     errors.append(('to float:', w))
         else:

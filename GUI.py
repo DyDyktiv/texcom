@@ -2,10 +2,11 @@ import sys
 import os
 import os.path
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QLineEdit, QPushButton, QGridLayout, \
-    QCheckBox, QProgressBar, QFileDialog
+    QCheckBox, QProgressBar, QFileDialog, QDialog
 
 
 import tc_analize
+import tc_classes
 
 
 class Example(QWidget):
@@ -73,18 +74,61 @@ class Example(QWidget):
 
     def startWork(self):
         self.start.blockSignals(True)
-        print('Input database:')
-        print('Type:', self.inMode.currentText())
-        print('Path:', os.path.normpath(self.inPath.text()).replace('\\', '/'))
-        print('Output database')
-        print('Type:', self.outMode.currentText())
-        print('Path', os.path.normpath(self.outPath.text()).replace('\\', '/'))
-        print('Mode:', self.hmode.isChecked())
+        intype = self.inMode.currentText()
+        inpath = os.path.normpath(self.inPath.text()).replace('\\', '/')
 
-        analize = tc_analize.analize(os.path.normpath(self.inPath.text()).replace('\\', '/'), self.inMode.currentText())
-        print(len(analize.files), 'files')
-        print(analize.fullsize//1000, 'KB')
+        outtype = self.outMode.currentText()
+        outpath = os.path.normpath(self.outPath.text()).replace('\\', '/')
+
+        strapt = self.hmode.isChecked()
+
+        '''
+        print('Input database:')
+        print('Type:', intype)
+        print('Path:', inpath)
+        print('Output database')
+        print('Type:', outtype)
+        print('Path', outpath)
+        print('Mode:', strapt)
+        #'''
+
+        analize = tc_analize.analize(inpath, intype)
+
+        errorcount = 0
+        errorpath = os.path.join(outpath, 'errors.log')
+        ferror = open(errorpath, 'w', encoding='utf-8')
+        ferror.close()
+        size = 0
+        self.progbar.setValue(1)
+        p = analize.fullsize//99
+        for f in analize.files:
+            f.read(intype)
+            if f.error:
+                errorcount += 1
+                ferror = open(errorpath, 'a', encoding='utf-8')
+                if intype == 'dos':
+                    ferror.write('{} {} {}\n'.format(f.dos_name, f.error.name, f.error.note))
+                ferror.close()
+            else:
+                f.save(outtype, outpath)
+            size += f.size
+            self.progbar.setValue(1 + size//p)
+        if errorcount == 0:
+            os.remove(errorpath)
+        self.infodialog(len(analize.files), errorcount)
         self.start.blockSignals(False)
+
+    def infodialog(self, all, errors=None):
+        d = QDialog()
+        d.setWindowTitle("info")
+        grid = QGridLayout()
+        grid.setSpacing(10)
+        grid.addWidget(QLabel('Обработано файлов: {}'.format(all)), 0, 0)
+        if errors:
+            grid.addWidget(QLabel('Успешно: {}'.format(all-errors)), 1, 0)
+            grid.addWidget(QLabel('Список ошибок в errors.log'), 2, 0)
+        d.setLayout(grid)
+        d.exec_()
 
 
 if __name__ == '__main__':
