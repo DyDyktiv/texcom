@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QComboBox, QLineEdit,
 
 
 import tc_analize
-import tc_classes
 
 
 class Example(QWidget):
@@ -82,16 +81,6 @@ class Example(QWidget):
 
         strapt = self.hmode.isChecked()
 
-        '''
-        print('Input database:')
-        print('Type:', intype)
-        print('Path:', inpath)
-        print('Output database')
-        print('Type:', outtype)
-        print('Path', outpath)
-        print('Mode:', strapt)
-        #'''
-
         analize = tc_analize.analize(inpath, intype)
 
         errorcount = 0
@@ -110,7 +99,10 @@ class Example(QWidget):
                     ferror.write('{} {} {}\n'.format(f.dos_name, f.error.name, f.error.note))
                 ferror.close()
             else:
-                f.save(outtype, outpath)
+                if strapt:
+                    f.save(outtype, os.path.join(outpath, os.path.relpath(f.path, inpath)))
+                else:
+                    f.save(outtype, outpath)
             size += f.size
             self.progbar.setValue(1 + size//p)
         if errorcount == 0:

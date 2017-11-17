@@ -1,3 +1,4 @@
+import os
 import os.path
 import re
 
@@ -232,6 +233,8 @@ class Document:
                 self.recs.append(record)
 
     def save(self, mode, path):
+        if not os.path.exists(path):
+            os.mkdir(path)
         if mode == 'xml':
             self.xml_save(path)
         elif mode == 'MDB':
@@ -239,7 +242,15 @@ class Document:
 
     def xml_save(self, path):
         t = ' ' * 4
-        f = open(os.path.join(path, self.name + '.xml'), 'w', encoding='utf-8')
+        fname = os.path.join(path, self.name)
+        if os.path.isfile(fname + '.xml'):
+            i = 1
+            while os.path.isfile(fname + '({}).xml'.format(i)):
+                i += 1
+            fname = fname + '({}).xml'.format(i)
+        else:
+            fname += '.xml'
+        f = open(fname, 'w', encoding='utf-8')
         f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         f.write('<data dos_name="{}" note="{}">\n'.format(self.dos_name, self.note))
 
