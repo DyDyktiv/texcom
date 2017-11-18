@@ -14,6 +14,10 @@ class Example(QWidget):
         self.initUI()
 
     def initUI(self):
+        """
+        Графический интрейфей пользователя
+        :return: None
+        """
         self.setFixedSize(480, 300)
         self.setWindowTitle('DOS-XML-MDB Converter')
 
@@ -64,14 +68,26 @@ class Example(QWidget):
         self.show()
 
     def inputPath(self):
+        """
+        Файловый диалог для выбора исходной директории
+        :return: None
+        """
         file = os.path.normpath(QFileDialog.getExistingDirectory(self))
         self.inPath.setText(file)
 
     def outputPath(self):
+        """
+        Файловый диалог для выбора папки сохранения
+        :return: None
+        """
         file = os.path.normpath(QFileDialog.getExistingDirectory(self))
         self.outPath.setText(file)
 
     def startWork(self):
+        """
+        Обработка сигнала по кнопке "Приступить"
+        :return: None
+        """
         self.start.blockSignals(True)
         intype = self.inMode.currentText()
         inpath = os.path.normpath(self.inPath.text()).replace('\\', '/')
@@ -111,6 +127,12 @@ class Example(QWidget):
         self.start.blockSignals(False)
 
     def infodialog(self, all, errors=None):
+        """
+        Окно в конце обрабокти, которое показывает сколько было обработано файлов
+        :param all: всего файлов
+        :param errors: файлов с ошибками
+        :return: None
+        """
         d = QDialog()
         d.setWindowTitle("info")
         grid = QGridLayout()

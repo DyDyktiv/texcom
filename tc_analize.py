@@ -5,12 +5,23 @@ import tc_classes
 
 
 class Report:
+    """
+    Класс, возвращаемый функцией analize,
+    содержит поля fullsize, общий объем возвращаемых файлов в B,
+    files, списко файлов в виде классов Document из tc_classes
+    """
     def __init__(self):
         self.fullsize = 0
         self.files = []
 
 
 def analize(dbpath, dbtype):
+    """
+    Функция анализа папки на переданный тип данных
+    :param dbpath: путь папки для анализа
+    :param dbtype: тип искомых данных
+    :return: объект класса Report
+    """
     if dbtype == 'dos':
         mask = re.compile('\.[\d]{3}')
     elif dbtype == 'xml':

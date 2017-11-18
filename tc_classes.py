@@ -13,6 +13,9 @@ real = re.compile('\d+[,.]?\d+')
 
 
 class EError:
+    """
+    Класс ошибки, содержит имя и комментарий
+    """
     def __init__(self, name, note=''):
         self.name = name
         self.note = note
@@ -23,6 +26,9 @@ class EError:
 
 
 class Attr:
+    """
+    Класс атрибута, содержит иформацию об атирбуте: имя, маску, тип и длину в досовском формате
+    """
     def __init__(self, name, mask, mode, long=0):
         self.name = name
         self.mask = mask
@@ -31,6 +37,9 @@ class Attr:
 
 
 class Document:
+    """
+    Класс обрабатываемого файла
+    """
     def __init__(self, name, path, mode):
         self.error = False
         self.dos_name = None
@@ -310,6 +319,9 @@ class Document:
         return True
 
     def print(self):
+        """
+        Выводит всю инфу о классе в cmd
+        """
         print('Erorr?...{}'.format((False, True)[self.error]))
         print('Name: {}     dos name: {}     size: {} B'.format(self.name, self.dos_name, self.size))
         print('Path: {}'.format(self.path))
@@ -323,6 +335,7 @@ class Document:
 
 
 def tofloat(n):
+    """Проверка данных на возможность преобразования к float"""
     try:
         float(n)
         return True
@@ -333,7 +346,7 @@ def tofloat(n):
 def dosattrwork(s):
     """Преобразует строку атрибутов в массив аттрибутов"""
     atrs = list(filter(lambda x: x, s.split(';')))
-    errors = []  # Список ошибок
+    errors = []
     for i, c in enumerate(atrs):
         if re_attr_str.match(c):
             atrs[i] = Attr(re_attr_name.match(c).group(), c.split('"')[1], 'str',
@@ -362,7 +375,7 @@ def dosattrwork(s):
 def dosrecordwork(s: str, atrs):
     """Преобразует строку в запись по макету атрибутов"""
     rept = []
-    errors = []  # Список ошибок
+    errors = []
     for a in atrs:
         if s:
             n = a.long
